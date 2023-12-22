@@ -17,7 +17,8 @@ def main():
     person_2.pieces.append(draw_pile.draw())
     person_2.pieces.append(draw_pile.draw())
 
-    for _ in range(10):
+    for turn in range(15):
+        print(turn + 1)
         print(board)
         print("Person 1:")
         print(f"\t{person_1}")
