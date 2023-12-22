@@ -154,7 +154,22 @@ class SearchNode:
 class BoardSolver:
     """Class to handle solving the board."""
 
-    def solve(self, pieces: list[Piece]) -> Board:
+    @staticmethod
+    def insert(board: Board, piece: Piece) -> Board:
+        """Attempts to add a piece to the board.
+
+        Args:
+            piece (Piece): The piece to be inserted.
+            board (Board): The board to insert the piece into.
+
+        Returns:
+            Board: The new board with the piece inserted.
+        """
+        pieces = [piece for play in board.plays for piece in play.pieces] + [piece]
+        return BoardSolver.solve(pieces)
+
+    @staticmethod
+    def solve(pieces: list[Piece]) -> Board:
         """Solves the board.
 
         Args:
