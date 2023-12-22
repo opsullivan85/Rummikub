@@ -1,11 +1,33 @@
 from piece import Piece
+import pickle
+import atexit
 
 
 class Play:
     """Collection of pieces forming a play on the board."""
 
+    play_valid_cache = {}
+
     def __init__(self, pieces: list[Piece] = None) -> None:
         self.pieces = pieces or []
+
+    @staticmethod
+    def save_cache():
+        """Saves the cache to the file."""
+        with open("play_valid_cache.pkl", "wb") as f:
+            data = pickle.dumps(Play.play_valid_cache)
+            f.write(data)
+
+    @staticmethod
+    def load_cache():
+        """Loads the cache from the file."""
+        try:
+            with open("play_valid_cache.pkl", "rb") as f:
+                data = f.read()
+                Play.play_valid_cache = pickle.loads(data)
+                print("Loaded play_valid_cache")
+        except FileNotFoundError:
+            pass
 
     def __hash__(self) -> int:
         """Gets the hash of the play.
@@ -128,9 +150,16 @@ class Play:
         Returns:
             bool: True if the play is valid, False otherwise.
         """
-        return self.is_valid_straight(
+        cache_object = (self, allow_partial)
+        if cache_object in Play.play_valid_cache:
+            return Play.play_valid_cache[cache_object]
+
+        rval = self.is_valid_straight(
             allow_partial=allow_partial
         ) or self.is_valid_collection(allow_partial=allow_partial)
+
+        Play.play_valid_cache[cache_object] = rval
+        return rval
 
     def is_valid_straight(self, allow_partial: bool = False) -> bool:
         """Checks if a play is a valid straight.
@@ -204,6 +233,10 @@ class Play:
             return False
 
         return True
+
+
+Play.load_cache()
+atexit.register(Play.save_cache)
 
 
 if __name__ == "__main__":

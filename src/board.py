@@ -172,6 +172,7 @@ class BoardSolver:
             with open("solver_cache.pkl", "rb") as f:
                 data = f.read()
                 BoardSolver.solver_cache = pickle.loads(data)
+                print("Loaded solver_cache")
         except FileNotFoundError:
             pass
 
