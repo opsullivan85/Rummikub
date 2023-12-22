@@ -1,0 +1,153 @@
+from piece import Piece
+
+
+class Play:
+    """Collection of pieces forming a play on the board."""
+
+    def __init__(self, pieces: list[Piece] = None) -> None:
+        self.pieces = pieces or []
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.pieces))
+
+    def __eq__(self, other: "Play") -> bool:
+        return self.pieces == other.pieces
+
+    def __repr__(self) -> str:
+        s = ""
+        if self.is_valid_straight():
+            s += "Straight: "
+        elif self.is_valid_collection():
+            s += "Collection: "
+        else:
+            s += "Invalid: "
+
+        s += ", ".join(str(piece) for piece in self.pieces)
+
+        return s
+
+    def add_piece(self, piece: Piece) -> "Play":
+        """Adds a piece to the play.
+
+        Args:
+            piece (Piece): The piece to add.
+        """
+        self.pieces.append(piece)
+        return self
+
+    def can_add_piece(self, piece: Piece, allow_partial: bool = False) -> bool:
+        """Checks if a piece can be added to the play.
+
+        Args:
+            piece (Piece): The piece to be added.
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
+        Returns:
+            bool: True if the piece can be added, False otherwise.
+        """
+        return self.copy().add_piece(piece).is_valid(allow_partial=allow_partial)
+
+    def copy(self) -> "Play":
+        """Return a copy of the play."""
+        return Play(self.pieces[:])
+
+    def is_valid(self, allow_partial: bool = False) -> bool:
+        """Checks if a play is valid.
+
+        >>> Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]).is_valid_straight()
+        True
+        >>> Play([Piece("red", 1), Piece("blue", 1), Piece("yellow", 1)]).is_valid_collection()
+        True
+        >>> Play([Piece("red", 1), Piece("red", 2)]).is_valid_straight()
+        False
+        >>> Play([Piece("red", 1), Piece("blue", 1)]).is_valid_collection()
+        False
+        >>> Play([Piece("red", 1), Piece("red", 2)]).is_valid_straight(allow_partial=True)
+        True
+        >>> Play([Piece("red", 1), Piece("blue", 1)]).is_valid_collection(allow_partial=True)
+        True
+
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
+        Returns:
+            bool: True if the play is valid, False otherwise.
+        """
+        return self.is_valid_straight(
+            allow_partial=allow_partial
+        ) or self.is_valid_collection(allow_partial=allow_partial)
+
+    def is_valid_straight(self, allow_partial: bool = False) -> bool:
+        """Checks if a play is a valid straight.
+
+        >>> Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]).is_valid_straight()
+        True
+        >>> Play([Piece("red", 1), Piece("red", 2)]).is_valid_straight()
+        False
+        >>> Play([Piece("red", 1), Piece("red", 2), Piece("red", 4)]).is_valid_straight()
+        False
+        >>> Play([Piece("red", 1), Piece("red", 1), Piece("red", 1)]).is_valid_straight()
+        False
+        >>> Play([Piece("red", 1), Piece("red", 2), Piece("blue", 3)]).is_valid_straight()
+        False
+
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
+        Returns:
+            bool: True if the play is a valid straight, False otherwise.
+        """
+        # atleast 3 pieces
+        if not allow_partial and len(self.pieces) < 3:
+            return False
+
+        # all same color
+        if not all(piece.color == self.pieces[0].color for piece in self.pieces):
+            return False
+
+        # all consecutive numbers
+        numbers = [piece.number for piece in self.pieces]
+        numbers.sort()
+        for expected, number in enumerate(numbers, numbers[0]):
+            if not number == expected:
+                return False
+
+        return True
+
+    def is_valid_collection(self, allow_partial: bool = False) -> bool:
+        """Checks if a play is a valid collection.
+
+        >>> Play([Piece("red", 1), Piece("blue", 1), Piece("yellow", 1)]).is_valid_collection()
+        True
+        >>> Play([Piece("red", 1), Piece("blue", 1)]).is_valid_collection()
+        False
+        >>> Play([Piece("red", 1), Piece("blue", 1), Piece("red", 1)]).is_valid_collection()
+        False
+        >>> Play([Piece("red", 1), Piece("blue", 1), Piece("red", 2)]).is_valid_collection()
+        False
+        >>> Play([Piece("red", 1), Piece("blue", 1), Piece("red", 1), Piece("yellow", 1)]).is_valid_collection()
+        False
+
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
+        Returns:
+            bool: True if the play is a valid collection, False otherwise.
+        """
+        # atleast 3 pieces
+        if not allow_partial and len(self.pieces) < 3:
+            return False
+
+        # all same number
+        if not all(piece.number == self.pieces[0].number for piece in self.pieces):
+            return False
+
+        # all different colors
+        if not len(self.pieces) == len(set([piece.color for piece in self.pieces])):
+            return False
+
+        return True
