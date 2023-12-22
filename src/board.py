@@ -19,6 +19,9 @@ class Board:
         >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> hash(board1) == hash(board2)
         True
+
+        Returns:
+            int: The hash of the board.
         """
         return hash(tuple(self.plays))
 
@@ -31,6 +34,12 @@ class Board:
         >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board1 == board2
         True
+
+        Args:
+            other (Board): The object to compare to.
+
+        Returns:
+            bool: True if the boards are equal, False otherwise.
         """
         return self.plays == other.plays
 

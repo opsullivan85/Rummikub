@@ -8,6 +8,11 @@ class Play:
         self.pieces = pieces or []
 
     def __hash__(self) -> int:
+        """Gets the hash of the play.
+
+        Returns:
+            int: The hash of the play.
+        """
         return hash(tuple(self.pieces))
 
     def __eq__(self, other: "Play") -> bool:
