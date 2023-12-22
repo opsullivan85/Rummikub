@@ -11,16 +11,49 @@ class Board:
         self.plays: list[Play] = []
 
     def __hash__(self) -> int:
+        """Gets the hash of the board.
+
+        >>> board1 = Board()
+        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board2 = Board()
+        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> hash(board1) == hash(board2)
+        True
+        """
         return hash(tuple(self.plays))
 
     def __eq__(self, other: "Board") -> bool:
+        """Checks if two boards are equal.
+
+        >>> board1 = Board()
+        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board2 = Board()
+        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board1 == board2
+        True
+        """
         return self.plays == other.plays
 
     def __str__(self) -> str:
         return "Board:\n\t" + "\n\t".join(str(play) for play in self.plays)
 
     def copy(self) -> "Board":
-        """Return a copy of the board."""
+        """Return a copy of the board.
+
+        >>> board1 = Board()
+        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board2 = board1.copy()
+        >>> board1 == board2
+        True
+        >>> board1 is board2
+        False
+        >>> board1.plays[0] = Play([Piece("red", 1)])
+        >>> board1 == board2
+        False
+
+        Returns:
+            Board: The copy of the board.
+        """
         new_board = Board()
         new_board.plays = [play.copy() for play in self.plays]
         return new_board
@@ -54,6 +87,14 @@ class Board:
         self, piece: Piece, allow_partial: bool = False
     ) -> Iterator["Board"]:
         """Gets the neighbors of the board.
+
+        >>> board = Board()
+        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> neighbor = list(board.get_neighbors(Piece("red", 4)))[0]
+        >>> board2 = Board()
+        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3), Piece("red", 4)]))
+        >>> neighbor == board2
+        True
 
         Args:
             piece (Piece): The piece to be placed.
@@ -159,3 +200,9 @@ class BoardSolver:
                         )
                     )
         raise RuntimeError("No solution found.")
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
