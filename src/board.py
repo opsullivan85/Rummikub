@@ -155,17 +155,17 @@ class BoardSolver:
     """Class to handle solving the board."""
 
     @staticmethod
-    def insert(board: Board, piece: Piece) -> Board:
+    def insert(board: Board, pieces: list[Piece]) -> Board:
         """Attempts to add a piece to the board.
 
         Args:
-            piece (Piece): The piece to be inserted.
+            piece (list[Piece]): The pieces to be inserted.
             board (Board): The board to insert the piece into.
 
         Returns:
             Board: The new board with the piece inserted.
         """
-        pieces = [piece for play in board.plays for piece in play.pieces] + [piece]
+        pieces = [piece for play in board.plays for piece in play.pieces] + list(pieces)
         return BoardSolver.solve(pieces)
 
     @staticmethod

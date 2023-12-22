@@ -37,7 +37,10 @@ class DrawPile:
         Returns:
             Piece: The piece drawn from the draw pile.
         """
-        return self._pieces.pop()
+        try:
+            return self._pieces.pop()
+        except IndexError:
+            raise RuntimeError("Draw pile is empty.")
 
 
 if __name__ == "__main__":

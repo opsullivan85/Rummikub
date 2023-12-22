@@ -1,41 +1,46 @@
-from piece import Piece
-from board import BoardSolver
-
-
 if __name__ == "__main__":
-    import doctest
+    # import doctest
 
-    doctest.testmod()
+    # doctest.testmod()
 
-    print("\n" * 5)
+    from board import Board
+    from drawpile import DrawPile
+    from hand import Hand
+    from piece import Piece
+    from play import Play
 
-    print("Solving board")
+    board = Board()
+    board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+    draw_pile = DrawPile()
 
-    solver = BoardSolver()
-    b = solver.solve(
-        [
-            Piece("black", 1),
-            Piece("yellow", 1),
-            Piece("red", 1),
-            Piece("black", 11),
-            Piece("yellow", 11),
-            Piece("red", 11),
-            Piece("blue", 11),
-            # Piece("blue", 5),
-            # Piece("blue", 6),
-            # Piece("blue", 7),
-            # Piece("blue", 8),
-            # Piece("black", 6),
-            # Piece("black", 7),
-            # Piece("black", 8),
-            # Piece("red", 4),
-            # Piece("red", 5),
-            # Piece("red", 6),
-            # Piece("red", 7),
-            # Piece("red", 8),
-            # Piece("black", 9),
-            # Piece("yellow", 9),
-            # Piece("red", 9),
-        ]
-    )
-    print(b)
+    person_1 = Hand()
+    person_1.pieces.append(draw_pile.draw())
+    person_1.pieces.append(draw_pile.draw())
+    person_1.pieces.append(draw_pile.draw())
+
+    person_2 = Hand()
+    person_2.pieces.append(draw_pile.draw())
+    person_2.pieces.append(draw_pile.draw())
+    person_2.pieces.append(draw_pile.draw())
+
+    while True:
+        print(board)
+        print("Person 1:")
+        print(person_1)
+        print("Person 2:")
+        print(person_2)
+
+        board, turn_taken = person_1.take_turn(board, draw_pile)
+        if turn_taken:
+            person_1.reset_cache()
+            person_2.reset_cache()
+        board, turn_taken = person_2.take_turn(board, draw_pile)
+        if turn_taken:
+            person_1.reset_cache()
+            person_2.reset_cache()
+
+        print()
+        print()
+        print()
+        print()
+        print()

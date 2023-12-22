@@ -1,6 +1,7 @@
 from board import Board, BoardSolver
 from drawpile import DrawPile
 from piece import Piece
+import itertools
 
 
 class Hand:
@@ -8,13 +9,23 @@ class Hand:
 
     def __init__(self, pieces: list[Piece] = None) -> None:
         self.pieces = pieces or []
+        self.board_move_cache = set()
+
+    def reset_cache(self) -> None:
+        """Resets the board move cache.
+
+        Should be called whenever the board state changes.
+        """
+        self.board_move_cache = set()
 
     def __repr__(self) -> str:
         s = ""
         s += ", ".join(str(piece) for piece in self.pieces)
         return s
 
-    def take_turn(self, board: Board, draw_pile: DrawPile) -> Board:
+    def take_turn(
+        self, board: Board, draw_pile: DrawPile, max_turn_size: int = 3
+    ) -> tuple[Board, bool]:
         """Takes a turn.
 
         Tries to play a piece from the hand. If no piece can be played, draws a piece from the draw pile.
@@ -33,24 +44,38 @@ class Hand:
         Args:
             board (Board): The board to play on.
             draw_pile (DrawPile): The draw pile to draw from.
+            max_turn_size (int, optional): The maximum number of pieces to play in a turn. Defaults to 3.
 
         Returns:
-            Board: The new state of the board. Possible unchanged.
+            tuple[Board, bool]: The new state of the board, and if a turn was taken.
         """
-        made_move = False
-        # just implementing a greedy algorithm for now
-        for piece in self.pieces:
-            try:
-                board = BoardSolver.insert(board, piece)
-                self.pieces.remove(piece)
-                made_move = True
-            except RuntimeError:
-                pass
+        took_turn = False
+        combination_upper_bound = min(max_turn_size, len(self.pieces) + 1)
+        # try to place as many pieces as possible
+        for combination_length in range(combination_upper_bound, 1, -1):
+            for pieces in itertools.combinations(self.pieces, combination_length):
+                if pieces in self.board_move_cache:
+                    print(".", end="")
+                    continue
 
-        if not made_move:
+                print(combination_length, [str(piece) for piece in pieces])
+
+                try:
+                    board = BoardSolver.insert(board, pieces)
+                    self.pieces = [
+                        piece for piece in self.pieces if piece not in pieces
+                    ]
+                    self.reset_cache()
+                    took_turn = True
+                    break
+                except RuntimeError:
+                    self.board_move_cache.add(pieces)
+                    pass
+
+        if not took_turn:
             self.pieces.append(draw_pile.draw())
 
-        return board
+        return board, took_turn
 
 
 if __name__ == "__main__":
