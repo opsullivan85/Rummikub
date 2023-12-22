@@ -9,7 +9,13 @@ class Play:
     play_valid_cache = {}
 
     def __init__(self, pieces: list[Piece] = None) -> None:
+        """Creates a play.
+
+        Args:
+            pieces (list[Piece], optional): Pieces to create the play with. Defaults to None.
+        """
         self.pieces = pieces or []
+        self._is_valid = None
 
     @staticmethod
     def save_cache():
@@ -86,6 +92,7 @@ class Play:
             The play with the piece added to.
         """
         self.pieces.append(piece)
+        self._is_valid = None  # invalidate cache
         return self
 
     def can_add_piece(self, piece: Piece, allow_partial: bool = False) -> bool:
@@ -150,15 +157,23 @@ class Play:
         Returns:
             bool: True if the play is valid, False otherwise.
         """
+        # see if already calculated
+        if self._is_valid is not None:
+            return self._is_valid
+
+        # check cache
         cache_object = (self, allow_partial)
         if cache_object in Play.play_valid_cache:
-            return Play.play_valid_cache[cache_object]
+            rval = Play.play_valid_cache[cache_object]
 
-        rval = self.is_valid_straight(
-            allow_partial=allow_partial
-        ) or self.is_valid_collection(allow_partial=allow_partial)
+        else:
+            # do the actual check
+            rval = self.is_valid_straight(
+                allow_partial=allow_partial
+            ) or self.is_valid_collection(allow_partial=allow_partial)
+            Play.play_valid_cache[cache_object] = rval
 
-        Play.play_valid_cache[cache_object] = rval
+        self._is_valid = rval
         return rval
 
     def is_valid_straight(self, allow_partial: bool = False) -> bool:

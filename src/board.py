@@ -11,6 +11,10 @@ class Board:
 
     def __init__(self) -> None:
         self.plays: list[Play] = []
+        self.num_patial_plays = 0
+        """Stores the number of partial plays on the board.
+        ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+        """
 
     def __hash__(self) -> int:
         """Gets the hash of the board.
@@ -67,6 +71,7 @@ class Board:
         """
         new_board = Board()
         new_board.plays = [play.copy() for play in self.plays]
+        new_board.num_patial_plays = self.num_patial_plays
         return new_board
 
     def get_places_for_piece(
@@ -94,6 +99,44 @@ class Board:
             if play.can_add_piece(piece, allow_partial=allow_partial):
                 yield i
 
+    def add_piece(self, piece: Piece, play_index: int) -> "Board":
+        """Adds a piece to the board on a certian play.
+
+        Args:
+            piece (Piece): The piece to be placed.
+            play_index (int): The index of the play to place the piece on.
+
+        Returns:
+            Board: This board with the piece added.
+        """
+        was_partial = self.plays[play_index].is_valid()
+        self.plays[play_index].add_piece(piece)
+        is_partial = self.plays[play_index].is_valid()
+
+        # update the number of partial plays
+        # it can only change if the play was partial and is no longer partial
+        if was_partial and not is_partial:
+            self.num_patial_plays -= 1
+        elif not was_partial and is_partial:
+            raise RuntimeError("This function shouldn't make a new play partial")
+
+        return self
+
+    def add_play(self, play: Play) -> "Board":
+        """Adds a play to the board.
+
+        Args:
+            play (Play): The play to be added.
+
+        Returns:
+            Board: This board with the play added.
+        """
+        self.plays.append(play)
+        if not play.is_valid():
+            self.num_patial_plays += 1
+
+        return self
+
     def get_neighbors(
         self, piece: Piece, allow_partial: bool = False
     ) -> Iterator["Board"]:
@@ -117,17 +160,17 @@ class Board:
         """
         for i in self.get_places_for_piece(piece, allow_partial=allow_partial):
             new_board = self.copy()
-            new_board.plays[i].add_piece(piece)
+            new_board.add_piece(piece, i)
             yield new_board
 
-    def is_valid(self, allow_partial=False) -> bool:
+    def is_valid(self) -> bool:
         """Checks if the board is valid.
 
         >>> board = Board()
-        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board.is_valid()
         True
-        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 4)]))
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 4)]))
         >>> board.is_valid()
         False
 
@@ -138,7 +181,7 @@ class Board:
         Returns:
             bool: True if the board is valid, False otherwise.
         """
-        return all(play.is_valid(allow_partial=allow_partial) for play in self.plays)
+        return self.num_patial_plays == 0
 
 
 @dataclass
@@ -200,6 +243,10 @@ class BoardSolver:
         Returns:
             Board: The solved board.
         """
+        # check if there aren't enough pieces to make a solution
+        if len(pieces) < 3:
+            raise RuntimeError("No solution found.")
+
         # check if the board has already been solved
         solver_cache_key = tuple(pieces)
         if solver_cache_key in BoardSolver.solver_cache:
@@ -208,13 +255,13 @@ class BoardSolver:
             return BoardSolver.solver_cache[solver_cache_key]
         BoardSolver.solver_cache[solver_cache_key] = None
 
+        explored = set()
         queue = [
             SearchNode(
                 board=Board(),
                 pieces=pieces,
             )
         ]
-        explored = set()
         while queue:
             # depth first search
             node = queue.pop(-1)
@@ -235,13 +282,23 @@ class BoardSolver:
                 # try to make a new play with the piece
                 if not search_space and node.incomplete_depth < 2:
                     neighbor = node.board.copy()
-                    neighbor.plays.append(Play([piece]))
+                    neighbor.add_play(Play([piece]))
                     search_space = [neighbor]
 
                 for neighbor in search_space:
+                    # check cache
                     if neighbor in explored:
                         continue
+
+                    # don't explore nodes with more than one partial play
+                    # this reduces the search space by forcing the solver to
+                    # complete partial plays before making new ones
+                    if neighbor.num_patial_plays > 1:
+                        continue
+
+                    # add to cache
                     explored.add(neighbor)
+
                     incomplete_depth = (
                         0 if neighbor.is_valid() else node.incomplete_depth + 1
                     )
