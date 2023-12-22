@@ -41,35 +41,51 @@ class Play:
         self.pieces.append(piece)
         return self
 
-    def can_add_piece(self, piece: Piece) -> bool:
+    def can_add_piece(self, piece: Piece, allow_partial: bool = False) -> bool:
         """Checks if a piece can be added to the play.
 
         Args:
             piece (Piece): The piece to be added.
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
 
         Returns:
             bool: True if the piece can be added, False otherwise.
         """
-        return self.copy().add_piece(piece).is_valid()
+        return self.copy().add_piece(piece).is_valid(allow_partial=allow_partial)
 
     def copy(self) -> "Play":
         """Return a copy of the play."""
         return Play(self.pieces[:])
 
-    def is_valid(self) -> bool:
+    def is_valid(self, allow_partial: bool = False) -> bool:
         """Checks if a play is valid.
 
         >>> Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]).is_valid_straight()
         True
         >>> Play([Piece("red", 1), Piece("blue", 1), Piece("yellow", 1)]).is_valid_collection()
         True
+        >>> Play([Piece("red", 1), Piece("red", 2)]).is_valid_straight()
+        False
+        >>> Play([Piece("red", 1), Piece("blue", 1)]).is_valid_collection()
+        False
+        >>> Play([Piece("red", 1), Piece("red", 2)]).is_valid_straight(allow_partial=True)
+        True
+        >>> Play([Piece("red", 1), Piece("blue", 1)]).is_valid_collection(allow_partial=True)
+        True
+
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
 
         Returns:
             bool: True if the play is valid, False otherwise.
         """
-        return self.is_valid_straight() or self.is_valid_collection()
+        return self.is_valid_straight(
+            allow_partial=allow_partial
+        ) or self.is_valid_collection(allow_partial=allow_partial)
 
-    def is_valid_straight(self) -> bool:
+    def is_valid_straight(self, allow_partial: bool = False) -> bool:
         """Checks if a play is a valid straight.
 
         >>> Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]).is_valid_straight()
@@ -83,12 +99,15 @@ class Play:
         >>> Play([Piece("red", 1), Piece("red", 2), Piece("blue", 3)]).is_valid_straight()
         False
 
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
 
         Returns:
             bool: True if the play is a valid straight, False otherwise.
         """
         # atleast 3 pieces
-        if len(self.pieces) < 3:
+        if not allow_partial and len(self.pieces) < 3:
             return False
 
         # all same color
@@ -104,7 +123,7 @@ class Play:
 
         return True
 
-    def is_valid_collection(self) -> bool:
+    def is_valid_collection(self, allow_partial: bool = False) -> bool:
         """Checks if a play is a valid collection.
 
         >>> Play([Piece("red", 1), Piece("blue", 1), Piece("yellow", 1)]).is_valid_collection()
@@ -118,11 +137,15 @@ class Play:
         >>> Play([Piece("red", 1), Piece("blue", 1), Piece("red", 1), Piece("yellow", 1)]).is_valid_collection()
         False
 
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
         Returns:
             bool: True if the play is a valid collection, False otherwise.
         """
         # atleast 3 pieces
-        if len(self.pieces) < 3:
+        if not allow_partial and len(self.pieces) < 3:
             return False
 
         # all same number
@@ -151,7 +174,9 @@ class Board:
         new_board.plays = [play.copy() for play in self.plays]
         return new_board
 
-    def get_places_for_piece(self, piece: Piece) -> Iterator[int]:
+    def get_places_for_piece(
+        self, piece: Piece, allow_partial: bool = False
+    ) -> Iterator[int]:
         """Gets the places where a piece can be placed on the board.
 
         >>> board = Board()
@@ -163,31 +188,36 @@ class Board:
 
         Args:
             piece (Piece): The piece to be placed.
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
 
         Returns:
             Iterator[int]: The places where the piece can be placed.
                 As indices of self.plays.
         """
         for i, play in enumerate(self.plays):
-            if play.can_add_piece(piece):
+            if play.can_add_piece(piece, allow_partial=allow_partial):
                 yield i
 
-    def get_neighbors(self, piece: Piece) -> Iterator["Board"]:
+    def get_neighbors(
+        self, piece: Piece, allow_partial: bool = False
+    ) -> Iterator["Board"]:
         """Gets the neighbors of the board.
 
         Args:
             piece (Piece): The piece to be placed.
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
 
         Returns:
             Iterator[Board]: The neighbors of the board.
         """
-        print(f"Getting neighbors: {list(self.get_places_for_piece(piece))}")
-        for i in self.get_places_for_piece(piece):
+        for i in self.get_places_for_piece(piece, allow_partial=allow_partial):
             new_board = self.copy()
             new_board.plays[i].add_piece(piece)
             yield new_board
 
-    def is_valid(self) -> bool:
+    def is_valid(self, allow_partial=False) -> bool:
         """Checks if the board is valid.
 
         >>> board = Board()
@@ -198,10 +228,14 @@ class Board:
         >>> board.is_valid()
         False
 
+        Args:
+            allow_partial (bool): If the play can be a partial play.
+                ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
+
         Returns:
             bool: True if the board is valid, False otherwise.
         """
-        return all(play.is_valid() for play in self.plays)
+        return all(play.is_valid(allow_partial=allow_partial) for play in self.plays)
 
 
 @dataclass
@@ -228,11 +262,12 @@ class BoardSolver:
         Returns:
             Board: The solved board.
         """
-        root = SearchNode(
-            board=Board(),
-            pieces=pieces,
-        )
-        queue = [root]
+        queue = [
+            SearchNode(
+                board=Board(),
+                pieces=pieces,
+            )
+        ]
         while queue:
             # depth first search
             node = queue.pop(-1)
@@ -242,10 +277,11 @@ class BoardSolver:
             if not pieces:
                 return node.board
 
-            search_space = list(node.board.get_neighbors(pieces[0]))
+            search_space = list(node.board.get_neighbors(pieces[0], allow_partial=True))
+
+            # if there is no valid neighbor, and the incomplete depth is not too large
+            # try to make a new play with the piece
             if not search_space and node.incomplete_depth < 2:
-                # if there is no valid neighbor, and the incomplete depth is not too large
-                # try to make a new play with the piece
                 neighbor = node.board.copy()
                 neighbor.plays.append(Play([pieces[0]]))
                 search_space = [neighbor]
@@ -276,10 +312,11 @@ if __name__ == "__main__":
     print("Solving board")
 
     solver = BoardSolver()
-    solver.solve(
+    b = solver.solve(
         [
             Piece("red", 1),
             Piece("red", 2),
             Piece("red", 3),
         ]
     )
+    print(b)
