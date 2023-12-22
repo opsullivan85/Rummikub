@@ -154,6 +154,8 @@ class SearchNode:
 class BoardSolver:
     """Class to handle solving the board."""
 
+    solver_cache = {}
+
     @staticmethod
     def insert(board: Board, pieces: list[Piece]) -> Board:
         """Attempts to add a piece to the board.
@@ -178,6 +180,15 @@ class BoardSolver:
         Returns:
             Board: The solved board.
         """
+        # check if the board has already been solved
+        solver_cache_key = tuple(pieces)
+        if solver_cache_key in BoardSolver.solver_cache:
+            print("Solver cache hit.")
+            if BoardSolver.solver_cache[solver_cache_key] is None:
+                raise RuntimeError("No solution found.")
+            return BoardSolver.solver_cache[solver_cache_key]
+        BoardSolver.solver_cache[solver_cache_key] = None
+
         queue = [
             SearchNode(
                 board=Board(),
@@ -193,6 +204,7 @@ class BoardSolver:
             # if there are not remaining pieces
             # and the board is valid
             if not pieces and node.incomplete_depth == 0:
+                BoardSolver.solver_cache[solver_cache_key] = node.board
                 return node.board
 
             for piece in pieces:

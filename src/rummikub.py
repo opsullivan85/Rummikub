@@ -31,13 +31,7 @@ if __name__ == "__main__":
         print(person_2)
 
         board, turn_taken = person_1.take_turn(board, draw_pile)
-        if turn_taken:
-            person_1.reset_cache()
-            person_2.reset_cache()
         board, turn_taken = person_2.take_turn(board, draw_pile)
-        if turn_taken:
-            person_1.reset_cache()
-            person_2.reset_cache()
 
         print()
         print()

@@ -9,14 +9,6 @@ class Hand:
 
     def __init__(self, pieces: list[Piece] = None) -> None:
         self.pieces = pieces or []
-        self.board_move_cache = set()
-
-    def reset_cache(self) -> None:
-        """Resets the board move cache.
-
-        Should be called whenever the board state changes.
-        """
-        self.board_move_cache = set()
 
     def __repr__(self) -> str:
         s = ""
@@ -54,10 +46,6 @@ class Hand:
         # try to place as many pieces as possible
         for combination_length in range(combination_upper_bound, 1, -1):
             for pieces in itertools.combinations(self.pieces, combination_length):
-                if pieces in self.board_move_cache:
-                    print(".", end="")
-                    continue
-
                 print(combination_length, [str(piece) for piece in pieces])
 
                 try:
@@ -65,11 +53,9 @@ class Hand:
                     self.pieces = [
                         piece for piece in self.pieces if piece not in pieces
                     ]
-                    self.reset_cache()
                     took_turn = True
                     break
                 except RuntimeError:
-                    self.board_move_cache.add(pieces)
                     pass
 
         if not took_turn:
