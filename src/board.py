@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Iterator
 from play import Play
 from piece import Piece
+import pickle
+import atexit
 
 
 class Board:
@@ -157,6 +159,23 @@ class BoardSolver:
     solver_cache = {}
 
     @staticmethod
+    def save_cache():
+        """Saves the cache to the file."""
+        with open("solver_cache.pkl", "wb") as f:
+            data = pickle.dumps(BoardSolver.solver_cache)
+            f.write(data)
+
+    @staticmethod
+    def load_cache():
+        """Loads the cache from the file."""
+        try:
+            with open("solver_cache.pkl", "rb") as f:
+                data = f.read()
+                BoardSolver.solver_cache = pickle.loads(data)
+        except FileNotFoundError:
+            pass
+
+    @staticmethod
     def insert(board: Board, pieces: list[Piece]) -> Board:
         """Attempts to add a piece to the board.
 
@@ -183,7 +202,6 @@ class BoardSolver:
         # check if the board has already been solved
         solver_cache_key = tuple(pieces)
         if solver_cache_key in BoardSolver.solver_cache:
-            print("Solver cache hit.")
             if BoardSolver.solver_cache[solver_cache_key] is None:
                 raise RuntimeError("No solution found.")
             return BoardSolver.solver_cache[solver_cache_key]
@@ -236,6 +254,10 @@ class BoardSolver:
                         )
                     )
         raise RuntimeError("No solution found.")
+
+
+BoardSolver.load_cache()
+atexit.register(BoardSolver.save_cache)
 
 
 if __name__ == "__main__":

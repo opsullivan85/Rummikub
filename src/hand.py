@@ -46,8 +46,6 @@ class Hand:
         # try to place as many pieces as possible
         for combination_length in range(combination_upper_bound, 1, -1):
             for pieces in itertools.combinations(self.pieces, combination_length):
-                print(combination_length, [str(piece) for piece in pieces])
-
                 try:
                     board = BoardSolver.insert(board, pieces)
                     self.pieces = [
