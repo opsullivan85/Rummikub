@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterator
 
 
-@dataclass
+@dataclass(eq=False)
 class Piece:
     """A piece of the rummikub game."""
 
@@ -10,7 +10,7 @@ class Piece:
     number: int
 
     def __str__(self) -> str:
-        return f"{self.color} {self.number}"
+        return f"{self.color[0]}{self.number}"
 
 
 class Play:
@@ -269,36 +269,41 @@ class BoardSolver:
             )
         ]
         while queue:
+            print("================== QUEUE ==================")
+            [print(node.board, [str(p) for p in node.pieces], "\n") for node in queue]
             # depth first search
             node = queue.pop(-1)
             pieces = node.pieces
 
-            # solved
-            if not pieces:
+            # if there are not remaining pieces
+            # and the board is valid
+            if not pieces and node.incomplete_depth == 0:
                 return node.board
 
-            search_space = list(node.board.get_neighbors(pieces[0], allow_partial=True))
+            for piece in pieces:
+                other_pieces = [p for p in pieces if p != piece]
+                search_space = list(node.board.get_neighbors(piece, allow_partial=True))
 
-            # if there is no valid neighbor, and the incomplete depth is not too large
-            # try to make a new play with the piece
-            if not search_space and node.incomplete_depth < 2:
-                neighbor = node.board.copy()
-                neighbor.plays.append(Play([pieces[0]]))
-                search_space = [neighbor]
+                # if there is no valid neighbor, and the incomplete depth is not too large
+                # try to make a new play with the piece
+                if not search_space and node.incomplete_depth < 2:
+                    neighbor = node.board.copy()
+                    neighbor.plays.append(Play([piece]))
+                    search_space = [neighbor]
 
-            for neighbor in search_space:
-                incomplete_depth = (
-                    0 if neighbor.is_valid() else node.incomplete_depth + 1
-                )
-                # if the board is valid, add it to the queue
-                queue.append(
-                    SearchNode(
-                        board=neighbor,
-                        pieces=pieces[1:],
-                        parent=node,
-                        incomplete_depth=incomplete_depth,
+                for neighbor in search_space:
+                    incomplete_depth = (
+                        0 if neighbor.is_valid() else node.incomplete_depth + 1
                     )
-                )
+                    # if the board is valid, add it to the queue
+                    queue.append(
+                        SearchNode(
+                            board=neighbor,
+                            pieces=other_pieces,
+                            parent=node,
+                            incomplete_depth=incomplete_depth,
+                        )
+                    )
         raise RuntimeError("No solution found.")
 
 
@@ -315,6 +320,7 @@ if __name__ == "__main__":
     b = solver.solve(
         [
             Piece("red", 1),
+            Piece("red", 3),
             Piece("red", 2),
             Piece("red", 3),
         ]
