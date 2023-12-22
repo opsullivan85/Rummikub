@@ -10,12 +10,30 @@ class Play:
     def __hash__(self) -> int:
         """Gets the hash of the play.
 
+        >>> play1 = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> play2 = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> hash(play1) == hash(play2)
+        True
+
         Returns:
             int: The hash of the play.
         """
         return hash(tuple(self.pieces))
 
     def __eq__(self, other: "Play") -> bool:
+        """Checks if two plays are equal.
+
+        >>> play1 = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> play2 = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> play1 == play2
+        True
+
+        Args:
+            other (Play): The object to compare to.
+
+        Returns:
+            bool: True if the plays are equal, False otherwise.
+        """
         return self.pieces == other.pieces
 
     def __repr__(self) -> str:
@@ -34,14 +52,33 @@ class Play:
     def add_piece(self, piece: Piece) -> "Play":
         """Adds a piece to the play.
 
+        >>> play = Play()
+        >>> _ = play.add_piece(Piece("red", 1))
+        >>> play.pieces == [Piece("red", 1)]
+        True
+
         Args:
             piece (Piece): The piece to add.
+
+        Returns:
+            The play with the piece added to.
         """
         self.pieces.append(piece)
         return self
 
     def can_add_piece(self, piece: Piece, allow_partial: bool = False) -> bool:
         """Checks if a piece can be added to the play.
+
+        >>> play1 = Play([Piece("red", 1), Piece("red", 2)])
+        >>> play1.can_add_piece(Piece("red", 3))
+        True
+        >>> play1.can_add_piece(Piece("red", 4))
+        False
+        >>> play2 = Play([Piece("red", 1)])
+        >>> play2.can_add_piece(Piece("red", 2))
+        False
+        >>> play2.can_add_piece(Piece("red", 2), allow_partial=True)
+        True
 
         Args:
             piece (Piece): The piece to be added.
@@ -54,7 +91,18 @@ class Play:
         return self.copy().add_piece(piece).is_valid(allow_partial=allow_partial)
 
     def copy(self) -> "Play":
-        """Return a copy of the play."""
+        """Returns a copy of the play.
+
+        >>> play1 = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> play2 = play1.copy()
+        >>> play1 == play2
+        True
+        >>> play1 is play2
+        False
+
+        Returns:
+            Play: _description_
+        """
         return Play(self.pieces[:])
 
     def is_valid(self, allow_partial: bool = False) -> bool:
@@ -156,3 +204,9 @@ class Play:
             return False
 
         return True
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
