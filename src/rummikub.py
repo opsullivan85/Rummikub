@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterator
 
 
-@dataclass(eq=False)
+@dataclass(eq=True, frozen=True)
 class Piece:
     """A piece of the rummikub game."""
 
@@ -18,6 +18,12 @@ class Play:
 
     def __init__(self, pieces: list[Piece] = None) -> None:
         self.pieces = pieces or []
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.pieces))
+
+    def __eq__(self, other: "Play") -> bool:
+        return self.pieces == other.pieces
 
     def __repr__(self) -> str:
         s = ""
@@ -165,6 +171,12 @@ class Board:
     def __init__(self) -> None:
         self.plays: list[Play] = []
 
+    def __hash__(self) -> int:
+        return hash(tuple(self.plays))
+
+    def __eq__(self, other: "Board") -> bool:
+        return self.plays == other.plays
+
     def __str__(self) -> str:
         return "Board:\n\t" + "\n\t".join(str(play) for play in self.plays)
 
@@ -268,9 +280,8 @@ class BoardSolver:
                 pieces=pieces,
             )
         ]
+        explored = set()
         while queue:
-            print("================== QUEUE ==================")
-            [print(node.board, [str(p) for p in node.pieces], "\n") for node in queue]
             # depth first search
             node = queue.pop(-1)
             pieces = node.pieces
@@ -281,7 +292,8 @@ class BoardSolver:
                 return node.board
 
             for piece in pieces:
-                other_pieces = [p for p in pieces if p != piece]
+                other_pieces = pieces[:]
+                other_pieces.pop(other_pieces.index(piece))
                 search_space = list(node.board.get_neighbors(piece, allow_partial=True))
 
                 # if there is no valid neighbor, and the incomplete depth is not too large
@@ -292,6 +304,9 @@ class BoardSolver:
                     search_space = [neighbor]
 
                 for neighbor in search_space:
+                    if neighbor in explored:
+                        continue
+                    explored.add(neighbor)
                     incomplete_depth = (
                         0 if neighbor.is_valid() else node.incomplete_depth + 1
                     )
@@ -319,10 +334,28 @@ if __name__ == "__main__":
     solver = BoardSolver()
     b = solver.solve(
         [
+            Piece("black", 1),
+            Piece("yellow", 1),
             Piece("red", 1),
-            Piece("red", 3),
-            Piece("red", 2),
-            Piece("red", 3),
+            Piece("black", 11),
+            Piece("yellow", 11),
+            Piece("red", 11),
+            Piece("blue", 11),
+            Piece("blue", 5),
+            # Piece("blue", 6),
+            # Piece("blue", 7),
+            # Piece("blue", 8),
+            # Piece("black", 6),
+            # Piece("black", 7),
+            # Piece("black", 8),
+            # Piece("red", 4),
+            # Piece("red", 5),
+            # Piece("red", 6),
+            # Piece("red", 7),
+            # Piece("red", 8),
+            # Piece("black", 9),
+            # Piece("yellow", 9),
+            # Piece("red", 9),
         ]
     )
     print(b)
