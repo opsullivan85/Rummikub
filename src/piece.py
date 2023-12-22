@@ -11,6 +11,9 @@ class Piece:
     colors = ("red", "blue", "yellow", "black")
     """Valid colors for a piece."""
 
+    max_number = 13
+    """Maximum number for a piece."""
+
     def __init__(self, color: str, number: int) -> None:
         """Initializes a piece.
 
@@ -34,8 +37,10 @@ class Piece:
             )
         self.color = color
 
-        if number not in range(1, 14):
-            raise ValueError("Invalid number. Number must be between 1 and 13.")
+        if number not in range(1, Piece.max_number + 1):
+            raise ValueError(
+                f"Invalid number. Number must be between 1 and {Piece.max_number}."
+            )
         self.number = number
 
     def __str__(self) -> str:
