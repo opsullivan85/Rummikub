@@ -278,7 +278,7 @@ class BoardSolver:
         Returns:
             Board: The new board with the piece inserted.
         """
-        pieces = [board.pieces] + list(pieces)
+        pieces = [piece for play in board.plays for piece in play.pieces] + list(pieces)
         return BoardSolver.solve(pieces)
 
     @staticmethod
