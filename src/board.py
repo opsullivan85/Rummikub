@@ -20,9 +20,9 @@ class Board:
         """Gets the hash of the board.
 
         >>> board1 = Board()
-        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board1.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board2 = Board()
-        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> board2.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> hash(board1) == hash(board2)
         True
 
@@ -102,6 +102,14 @@ class Board:
     def add_piece(self, piece: Piece, play_index: int) -> "Board":
         """Adds a piece to the board on a certian play.
 
+        >>> board = Board()
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2)]))
+        >>> board.num_patial_plays == 1
+        True
+        >>> _ = board.add_piece(Piece("red", 3), 0)
+        >>> board.num_patial_plays == 0
+        True
+
         Args:
             piece (Piece): The piece to be placed.
             play_index (int): The index of the play to place the piece on.
@@ -109,21 +117,35 @@ class Board:
         Returns:
             Board: This board with the piece added.
         """
-        was_partial = self.plays[play_index].is_valid()
+        was_valid = self.plays[play_index].is_valid()
         self.plays[play_index].add_piece(piece)
-        is_partial = self.plays[play_index].is_valid()
+        is_valid = self.plays[play_index].is_valid()
 
         # update the number of partial plays
         # it can only change if the play was partial and is no longer partial
-        if was_partial and not is_partial:
+        if not was_valid and is_valid:
             self.num_patial_plays -= 1
-        elif not was_partial and is_partial:
+        elif was_valid and not is_valid:
             raise RuntimeError("This function shouldn't make a new play partial")
 
         return self
 
     def add_play(self, play: Play) -> "Board":
         """Adds a play to the board.
+
+        >>> board = Board()
+        >>> board.num_patial_plays == 0
+        True
+        >>> complete_play = Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> _ = board.add_play(complete_play)
+        >>> board.num_patial_plays == 0
+        True
+        >>> partial_play = Play([Piece("red", 4)])
+        >>> _ = board.add_play(partial_play)
+        >>> board.num_patial_plays == 1
+        True
+        >>> partial_play in board.plays
+        True
 
         Args:
             play (Play): The play to be added.
@@ -275,7 +297,7 @@ class BoardSolver:
 
             for piece in pieces:
                 other_pieces = pieces[:]
-                other_pieces.pop(other_pieces.index(piece))
+                other_pieces.remove(piece)
                 search_space = list(node.board.get_neighbors(piece, allow_partial=True))
 
                 # if there is no valid neighbor, and the incomplete depth is not too large
