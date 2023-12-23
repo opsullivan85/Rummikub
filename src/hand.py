@@ -24,7 +24,7 @@ class Hand:
 
         >>> from play import Play
         >>> board = Board()
-        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2)]))
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2)]))
         >>> draw_pile = DrawPile()
         >>> hand = Hand([Piece("red", 3)])
         >>> new_board, _ = hand.take_turn(board, draw_pile)

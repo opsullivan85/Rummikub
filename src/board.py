@@ -35,9 +35,9 @@ class Board:
         """Checks if two boards are equal.
 
         >>> board1 = Board()
-        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board1.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board2 = Board()
-        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board2.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board1 == board2
         True
 
@@ -56,7 +56,7 @@ class Board:
         """Return a copy of the board.
 
         >>> board1 = Board()
-        >>> board1.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board1.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board2 = board1.copy()
         >>> board1 == board2
         True
@@ -80,7 +80,7 @@ class Board:
         """Gets the places where a piece can be placed on the board.
 
         >>> board = Board()
-        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> list(board.get_places_for_piece(Piece("red", 4)))
         [0]
         >>> list(board.get_places_for_piece(Piece("red", 5)))
@@ -165,10 +165,10 @@ class Board:
         """Gets the neighbors of the board.
 
         >>> board = Board()
-        >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> neighbor = list(board.get_neighbors(Piece("red", 4)))[0]
         >>> board2 = Board()
-        >>> board2.plays.append(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3), Piece("red", 4)]))
+        >>> _ = board2.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3), Piece("red", 4)]))
         >>> neighbor == board2
         True
 
