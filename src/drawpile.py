@@ -28,6 +28,21 @@ class DrawPile:
 
         random.shuffle(self._pieces)
 
+    def is_empty(self) -> bool:
+        """Checks if the draw pile is empty.
+
+        >>> draw_pile = DrawPile()
+        >>> draw_pile.is_empty()
+        False
+        >>> draw_pile._pieces = []
+        >>> draw_pile.is_empty()
+        True
+
+        Returns:
+            bool: True if the draw pile is empty, False otherwise.
+        """
+        return len(self._pieces) == 0
+
     def draw(self) -> Piece:
         """Draws a piece from the draw pile.
 
@@ -37,6 +52,23 @@ class DrawPile:
         >>> draw_pile._pieces = [Piece("red", 1), Piece("red", 2), Piece("red", 3)]
         >>> str(draw_pile.draw())
         'r3'
+
+        >>> draw_pile._pieces = []
+        >>> draw_pile.draw()
+        Traceback (most recent call last):
+        ...
+        RuntimeError: Draw pile is empty.
+
+        >>> draw_pile = DrawPile()
+        >>> pieces = []
+        >>> while not draw_pile.is_empty():
+        ...     pieces.append(draw_pile.draw())
+        >>> len(pieces) == DrawPile.duplicates * len(Piece.colors) * Piece.max_number
+        True
+        >>> from collections import Counter
+        >>> c = Counter(pieces)
+        >>> all(count == DrawPile.duplicates for count in c.values())
+        True
 
         Returns:
             Piece: The piece drawn from the draw pile.
