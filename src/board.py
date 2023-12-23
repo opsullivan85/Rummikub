@@ -20,9 +20,9 @@ class Board:
         """Gets the hash of the board.
 
         >>> board1 = Board()
-        >>> board1.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board1.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> board2 = Board()
-        >>> board2.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> _ = board2.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
         >>> hash(board1) == hash(board2)
         True
 

@@ -27,7 +27,7 @@ class Hand:
         >>> board.plays.append(Play([Piece("red", 1), Piece("red", 2)]))
         >>> draw_pile = DrawPile()
         >>> hand = Hand([Piece("red", 3)])
-        >>> new_board = hand.take_turn(board, draw_pile)
+        >>> new_board, _ = hand.take_turn(board, draw_pile)
 
         # the pieces are reversed because of how the solver works
         >>> new_board.plays[0].pieces == [Piece("red", 3), Piece("red", 2), Piece("red", 1)]
