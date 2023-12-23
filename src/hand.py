@@ -9,6 +9,8 @@ class Hand:
 
     def __init__(self, pieces: list[Piece] = None) -> None:
         self.pieces = pieces or []
+        """Stores the pieces in the hand. Should be sorted."""
+        self.pieces.sort()
 
     def __repr__(self) -> str:
         s = ""
@@ -28,9 +30,7 @@ class Hand:
         >>> draw_pile = DrawPile()
         >>> hand = Hand([Piece("red", 3)])
         >>> new_board, _ = hand.take_turn(board, draw_pile)
-
-        # the pieces are reversed because of how the solver works
-        >>> new_board.plays[0].pieces == [Piece("red", 3), Piece("red", 2), Piece("red", 1)]
+        >>> new_board.plays[0] == Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
         True
 
         Args:
@@ -42,7 +42,9 @@ class Hand:
             tuple[Board, bool]: The new state of the board, and if a turn was taken.
         """
         took_turn = False
-        combination_upper_bound = min(max_turn_size, len(self.pieces) + 1)
+        combination_upper_bound = min(
+            max_turn_size, len(self.pieces) + len(board.pieces) + 1
+        )
         # try to place as many pieces as possible
         for combination_length in range(combination_upper_bound, 1, -1):
             for pieces in itertools.combinations(self.pieces, combination_length):
@@ -58,6 +60,7 @@ class Hand:
 
         if not took_turn:
             self.pieces.append(draw_pile.draw())
+            self.pieces.sort()
 
         return board, took_turn
 

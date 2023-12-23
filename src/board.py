@@ -11,6 +11,7 @@ class Board:
 
     def __init__(self) -> None:
         self.plays: list[Play] = []
+        self.pieces: list[Piece] = []
         self.num_patial_plays = 0
         """Stores the number of partial plays on the board.
         ex. [r1] + [r2] is a partial play, but [r1, r2] + [r3] is not.
@@ -72,6 +73,7 @@ class Board:
         new_board = Board()
         new_board.plays = [play.copy() for play in self.plays]
         new_board.num_patial_plays = self.num_patial_plays
+        new_board.pieces = self.pieces[:]
         return new_board
 
     def get_places_for_piece(
@@ -121,6 +123,8 @@ class Board:
         self.plays[play_index].add_piece(piece)
         is_valid = self.plays[play_index].is_valid()
 
+        self.pieces.append(piece)
+
         # update the number of partial plays
         # it can only change if the play was partial and is no longer partial
         if not was_valid and is_valid:
@@ -156,6 +160,8 @@ class Board:
         self.plays.append(play)
         if not play.is_valid():
             self.num_patial_plays += 1
+
+        self.pieces.extend(play.pieces)
 
         return self
 
@@ -223,6 +229,12 @@ class BoardSolver:
 
     solver_cache = {}
 
+    nodes_explored = 0
+    board_cache_hits = 0
+    node_cache_hits = 0
+    partial_plays_skipped = 0
+    incomplete_depth_skipped = 0
+
     @staticmethod
     def save_cache():
         """Saves the cache to the file."""
@@ -245,6 +257,18 @@ class BoardSolver:
     def insert(board: Board, pieces: list[Piece]) -> Board:
         """Attempts to add a piece to the board.
 
+        >>> board12 = Board()
+        >>> _ = board12.add_play(Play([Piece("red", 1), Piece("red", 2)]))
+        >>> new_board123 = BoardSolver.insert(board12, [Piece("red", 3)])
+        >>> board123 = Board()
+        >>> _ = board123.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> new_board123 == board123
+        True
+        >>> board = Board()
+        >>> new_board123 = BoardSolver.insert(board, [Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> new_board123 == board123
+        True
+
         Args:
             piece (list[Piece]): The pieces to be inserted.
             board (Board): The board to insert the piece into.
@@ -259,6 +283,18 @@ class BoardSolver:
     def solve(pieces: list[Piece]) -> Board:
         """Solves the board.
 
+        >>> BoardSolver.solver_cache = {}
+        >>> board123 = Board()
+        >>> _ = board123.add_play(Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)]))
+        >>> new_board123 = BoardSolver.solve([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> new_board123 == board123
+        True
+        >>> _ = BoardSolver.solve([Piece("red", 1), Piece("red", 2), Piece("red", 4)])
+        Traceback (most recent call last):
+        ...
+        RuntimeError: No solution found.
+
+
         Args:
             pieces (list[Piece]): The pieces to be placed on the board.
 
@@ -272,6 +308,7 @@ class BoardSolver:
         # check if the board has already been solved
         solver_cache_key = tuple(pieces)
         if solver_cache_key in BoardSolver.solver_cache:
+            BoardSolver.board_cache_hits += 1
             if BoardSolver.solver_cache[solver_cache_key] is None:
                 raise RuntimeError("No solution found.")
             return BoardSolver.solver_cache[solver_cache_key]
@@ -288,6 +325,7 @@ class BoardSolver:
             # depth first search
             node = queue.pop(-1)
             pieces = node.pieces
+            BoardSolver.nodes_explored += 1
 
             # if there are not remaining pieces
             # and the board is valid
@@ -295,14 +333,15 @@ class BoardSolver:
                 BoardSolver.solver_cache[solver_cache_key] = node.board
                 return node.board
 
+            # add new nodes for each valid move
+            # for each remaining piece
             for piece in pieces:
                 other_pieces = pieces[:]
                 other_pieces.remove(piece)
                 search_space = list(node.board.get_neighbors(piece, allow_partial=True))
 
-                # if there is no valid neighbor, and the incomplete depth is not too large
-                # try to make a new play with the piece
-                if not search_space and node.incomplete_depth < 2:
+                # if there is no valid neighbor try to make a new play with the piece
+                if not search_space:
                     neighbor = node.board.copy()
                     neighbor.add_play(Play([piece]))
                     search_space = [neighbor]
@@ -310,12 +349,14 @@ class BoardSolver:
                 for neighbor in search_space:
                     # check cache
                     if neighbor in explored:
+                        BoardSolver.node_cache_hits += 1
                         continue
 
                     # don't explore nodes with more than one partial play
                     # this reduces the search space by forcing the solver to
                     # complete partial plays before making new ones
                     if neighbor.num_patial_plays > 1:
+                        BoardSolver.partial_plays_skipped += 1
                         continue
 
                     # add to cache
@@ -324,6 +365,13 @@ class BoardSolver:
                     incomplete_depth = (
                         0 if neighbor.is_valid() else node.incomplete_depth + 1
                     )
+
+                    # don't explore which don't finish a play
+                    # in 3 pieces or less
+                    if incomplete_depth >= 3:
+                        BoardSolver.incomplete_depth_skipped += 1
+                        continue
+
                     # if the board is valid, add it to the queue
                     queue.append(
                         SearchNode(

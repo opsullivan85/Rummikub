@@ -2,6 +2,9 @@ from board import Board
 from drawpile import DrawPile
 from hand import Hand
 
+from board import BoardSolver
+from play import Play
+
 
 def main():
     board = Board()
@@ -28,6 +31,12 @@ def main():
         board, turn_taken = person_1.take_turn(board, draw_pile)
         board, turn_taken = person_2.take_turn(board, draw_pile)
 
+        print(f"{BoardSolver.nodes_explored = }")
+        print(f"{BoardSolver.board_cache_hits = }")
+        print(f"{BoardSolver.node_cache_hits = }")
+        print(f"{BoardSolver.partial_plays_skipped = }")
+        print(f"{BoardSolver.incomplete_depth_skipped = }")
+        print(f"{Play.cache_hits = }")
         print()
         print()
         print()

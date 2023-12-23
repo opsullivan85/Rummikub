@@ -7,6 +7,7 @@ class Play:
     """Collection of pieces forming a play on the board."""
 
     play_valid_cache = {}
+    cache_hits = 0
 
     def __init__(self, pieces: list[Piece] = None) -> None:
         """Creates a play.
@@ -15,6 +16,8 @@ class Play:
             pieces (list[Piece], optional): Pieces to create the play with. Defaults to None.
         """
         self.pieces = pieces or []
+        """Pieces in the play. Should be sorted."""
+        self.pieces.sort()
         self._is_valid = None
 
     @staticmethod
@@ -62,6 +65,8 @@ class Play:
         Returns:
             bool: True if the plays are equal, False otherwise.
         """
+        if not isinstance(other, Play):
+            return False
         return self.pieces == other.pieces
 
     def __repr__(self) -> str:
@@ -92,6 +97,7 @@ class Play:
             The play with the piece added to.
         """
         self.pieces.append(piece)
+        self.pieces.sort()
         self._is_valid = None  # invalidate cache
         return self
 
@@ -164,6 +170,7 @@ class Play:
         # check cache
         cache_object = (self, allow_partial)
         if cache_object in Play.play_valid_cache:
+            Play.cache_hits += 1
             rval = Play.play_valid_cache[cache_object]
 
         else:

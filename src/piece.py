@@ -74,6 +74,49 @@ class Piece:
             and self.number == other.number
         )
 
+    def __lt__(self, other: object) -> bool:
+        """Checks if one piece is less than another.
+
+        Color takes precedence over number.
+
+        >>> r = Piece("red", 1)
+        >>> b = Piece("blue", 1)
+        >>> b < r
+        True
+        >>> r < Piece("red", 2)
+        True
+
+        Args:
+            other (object): The object to compare to.
+
+        Returns:
+            bool: True if the piece is less than the other, False otherwise.
+        """
+        return isinstance(other, Piece) and (self.color[0], self.number) < (
+            other.color[0],
+            other.number,
+        )
+
+    def __gt__(self, other: object) -> bool:
+        """Checks if one piece is greater than another.
+
+        Color takes precedence over number.
+
+        >>> r = Piece("red", 1)
+        >>> b = Piece("blue", 1)
+        >>> r > b
+        True
+        >>> Piece("red", 2) > r
+        True
+
+        Args:
+            other (object): The object to compare to.
+
+        Returns:
+            bool: True if the piece is greater than the other, False otherwise.
+        """
+        return not self < other and self != other
+
     def __hash__(self) -> int:
         """Hashes the piece.
 
