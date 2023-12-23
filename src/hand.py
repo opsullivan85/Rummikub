@@ -32,6 +32,11 @@ class Hand:
         >>> new_board, _ = hand.take_turn(board, draw_pile)
         >>> new_board.plays[0] == Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
         True
+        >>> board = Board()
+        >>> hand = Hand([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        >>> new_board, _ = hand.take_turn(board, draw_pile)
+        >>> new_board.plays[0] == Play([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        True
 
         Args:
             board (Board): The board to play on.
@@ -42,11 +47,9 @@ class Hand:
             tuple[Board, bool]: The new state of the board, and if a turn was taken.
         """
         took_turn = False
-        combination_upper_bound = min(
-            max_turn_size, len(self.pieces) + len(board.pieces) + 1
-        )
+        combination_upper_bound = min(max_turn_size, len(self.pieces))
         # try to place as many pieces as possible
-        for combination_length in range(combination_upper_bound, 1, -1):
+        for combination_length in range(combination_upper_bound, 0, -1):
             for pieces in itertools.combinations(self.pieces, combination_length):
                 try:
                     board = BoardSolver.insert(board, pieces)
