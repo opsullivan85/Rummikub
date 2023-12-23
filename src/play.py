@@ -7,6 +7,7 @@ class Play:
     """Collection of pieces forming a play on the board."""
 
     play_valid_cache = {}
+    loaded_cache = False
     cache_hits = 0
 
     def __init__(self, pieces: list[Piece] = None) -> None:
@@ -34,6 +35,7 @@ class Play:
             with open("play_valid_cache.pkl", "rb") as f:
                 data = f.read()
                 Play.play_valid_cache = pickle.loads(data)
+                Play.loaded_cache = True
                 print("Loaded play_valid_cache")
         except FileNotFoundError:
             pass
@@ -257,8 +259,9 @@ class Play:
         return True
 
 
-Play.load_cache()
-atexit.register(Play.save_cache)
+if not Play.loaded_cache:
+    Play.load_cache()
+    atexit.register(Play.save_cache)
 
 
 if __name__ == "__main__":

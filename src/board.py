@@ -228,6 +228,7 @@ class BoardSolver:
     """Class to handle solving the board."""
 
     solver_cache = {}
+    loaded_cache = False
 
     nodes_explored = 0
     board_cache_hits = 0
@@ -249,6 +250,7 @@ class BoardSolver:
             with open("solver_cache.pkl", "rb") as f:
                 data = f.read()
                 BoardSolver.solver_cache = pickle.loads(data)
+                BoardSolver.loaded_cache = True
                 print("Loaded solver_cache")
         except FileNotFoundError:
             pass
@@ -384,9 +386,9 @@ class BoardSolver:
         raise RuntimeError("No solution found.")
 
 
-BoardSolver.load_cache()
-atexit.register(BoardSolver.save_cache)
-
+if not BoardSolver.loaded_cache:
+    BoardSolver.load_cache()
+    atexit.register(BoardSolver.save_cache)
 
 if __name__ == "__main__":
     import doctest
