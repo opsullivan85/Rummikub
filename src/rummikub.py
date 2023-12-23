@@ -26,12 +26,37 @@ def main():
         turn += 1
         print(turn)
         print(board)
-        print("Person 1:")
+        print("Person=1:")
         print(f"\t{person_1}")
         print("Person 2:")
         print(f"\t{person_2}")
 
         board, turn_taken = person_1.take_turn(board, draw_pile)
+
+        print(f"{BoardSolver.nodes_explored = }")
+        print(f"{BoardSolver.board_cache_hits = }")
+        print(f"{BoardSolver.node_cache_hits = }")
+        print(f"{BoardSolver.partial_plays_skipped = }")
+        print(f"{BoardSolver.incomplete_depth_skipped = }")
+        print(f"{Play.cache_hits = }")
+        BoardSolver.nodes_explored = 0
+        BoardSolver.board_cache_hits = 0
+        BoardSolver.node_cache_hits = 0
+        BoardSolver.partial_plays_skipped = 0
+        BoardSolver.incomplete_depth_skipped = 0
+        Play.cache_hits = 0
+        print()
+        print()
+        print()
+        print()
+        print()
+        print(turn)
+        print(board)
+        print("Person 1:")
+        print(f"\t{person_1}")
+        print("Person=2:")
+        print(f"\t{person_2}")
+
         board, turn_taken = person_2.take_turn(board, draw_pile)
 
         print(f"{BoardSolver.nodes_explored = }")
