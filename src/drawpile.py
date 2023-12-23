@@ -14,6 +14,10 @@ class DrawPile:
         >>> draw_pile = DrawPile()
         >>> len(draw_pile._pieces) == DrawPile.duplicates * len(Piece.colors) * Piece.max_number
         True
+        >>> from collections import Counter
+        >>> c = Counter(draw_pile._pieces)
+        >>> all(count == DrawPile.duplicates for count in c.values())
+        True
         """
         self._pieces = []
 

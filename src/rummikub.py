@@ -11,17 +11,20 @@ def main():
     draw_pile = DrawPile()
 
     person_1 = Hand()
-    person_1.pieces.append(draw_pile.draw())
-    person_1.pieces.append(draw_pile.draw())
-    person_1.pieces.append(draw_pile.draw())
 
     person_2 = Hand()
-    person_2.pieces.append(draw_pile.draw())
-    person_2.pieces.append(draw_pile.draw())
-    person_2.pieces.append(draw_pile.draw())
 
-    for turn in range(15):
-        print(turn + 1)
+    for _ in range(14):
+        person_1.pieces.append(draw_pile.draw())
+        person_2.pieces.append(draw_pile.draw())
+
+    person_1.pieces.sort()
+    person_2.pieces.sort()
+
+    turn = 0
+    while person_1.pieces and person_2.pieces:
+        turn += 1
+        print(turn)
         print(board)
         print("Person 1:")
         print(f"\t{person_1}")
