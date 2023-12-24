@@ -61,6 +61,8 @@ class Hand:
                     break
                 except RuntimeError:
                     pass
+            if not took_turn:
+                break
 
         if not took_turn:
             self.pieces.append(draw_pile.draw())
