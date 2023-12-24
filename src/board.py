@@ -235,6 +235,8 @@ class BoardSolver:
     node_cache_hits = 0
     partial_plays_skipped = 0
     incomplete_depth_skipped = 0
+    infesable_board_skipped = 0
+    boards_explored = 0
 
     @staticmethod
     def save_cache():
@@ -281,6 +283,72 @@ class BoardSolver:
         pieces = [piece for play in board.plays for piece in play.pieces] + list(pieces)
         return BoardSolver.solve(pieces)
 
+    def _is_board_fesable(pieces: list[Piece]) -> bool:
+        """Checks if the board is fesable.
+
+        Checks for each piece have either:
+        - 1 number adjacent to it of the same color
+        - 2 different colors of the same number
+
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("red", 2), Piece("red", 3)])
+        True
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("red", 2), Piece("red", 4)])
+        False
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("red", 2)])
+        True
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("yellow", 1), Piece("blue", 1)])
+        True
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("yellow", 1), Piece("blue", 2)])
+        False
+        >>> BoardSolver._is_board_fesable([Piece("red", 1), Piece("yellow", 1), Piece("red", 1)])
+        False
+
+        Args:
+            pieces (list[Piece]): The pieces to be placed on the board.
+
+        Returns:
+            bool: True if the fesability check passes, false otherwise.
+        """
+        # data structure used for checking fesability
+        numbers_by_color = {
+            color: [False for _ in range(Piece.max_number)] for color in Piece.colors
+        }
+        for piece in pieces:
+            numbers_by_color[piece.color][piece.number - 1] = True
+
+        straight_fesable = [False for _ in range(len(pieces))]
+        combination_fesable = [False for _ in range(len(pieces))]
+
+        # check for straight fesability
+        for i, piece in enumerate(pieces):
+            if not (piece.number == 1) and (
+                numbers_by_color[piece.color][piece.number - 1 - 1]
+            ):
+                straight_fesable[i] = True
+            elif (
+                not (piece.number == Piece.max_number)
+                and numbers_by_color[piece.color][piece.number + 1 - 1]
+            ):
+                straight_fesable[i] = True
+
+        # check for combination fesability
+        for i, piece in enumerate(pieces):
+            # don't check if the piece is already fesable
+            if straight_fesable[i]:
+                continue
+
+            colors_of_number = [
+                numbers_by_color[color][piece.number - 1] for color in Piece.colors
+            ]
+            if colors_of_number.count(True) >= 3:
+                combination_fesable[i] = True
+
+        # make sure each piece has atleast 1 fesable option
+        piece_fesable = [
+            straight_fesable[i] or combination_fesable[i] for i in range(len(pieces))
+        ]
+        return all(piece_fesable)
+
     @staticmethod
     def solve(pieces: list[Piece]) -> Board:
         """Solves the board.
@@ -315,6 +383,12 @@ class BoardSolver:
                 raise RuntimeError("No solution found.")
             return BoardSolver.solver_cache[solver_cache_key]
         BoardSolver.solver_cache[solver_cache_key] = None
+
+        if not BoardSolver._is_board_fesable(pieces):
+            BoardSolver.infesable_board_skipped += 1
+            raise RuntimeError("No solution found.")
+
+        BoardSolver.boards_explored += 1
 
         explored = set()
         queue = [
@@ -394,3 +468,8 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+    BoardSolver._is_board_fesable(
+        [Piece("red", 1), Piece("yellow", 1), Piece("blue", 1)]
+    )
+    BoardSolver._is_board_fesable([Piece("red", 1), Piece("red", 2)])

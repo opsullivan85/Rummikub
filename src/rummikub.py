@@ -38,12 +38,16 @@ def main():
         print(f"{BoardSolver.node_cache_hits = }")
         print(f"{BoardSolver.partial_plays_skipped = }")
         print(f"{BoardSolver.incomplete_depth_skipped = }")
+        print(f"{BoardSolver.infesable_board_skipped = }")
+        print(f"{BoardSolver.boards_explored = }")
         print(f"{Play.cache_hits = }")
         BoardSolver.nodes_explored = 0
         BoardSolver.board_cache_hits = 0
         BoardSolver.node_cache_hits = 0
         BoardSolver.partial_plays_skipped = 0
         BoardSolver.incomplete_depth_skipped = 0
+        BoardSolver.infesable_board_skipped = 0
+        BoardSolver.boards_explored = 0
         Play.cache_hits = 0
         print()
         print()
@@ -64,7 +68,17 @@ def main():
         print(f"{BoardSolver.node_cache_hits = }")
         print(f"{BoardSolver.partial_plays_skipped = }")
         print(f"{BoardSolver.incomplete_depth_skipped = }")
+        print(f"{BoardSolver.infesable_board_skipped = }")
+        print(f"{BoardSolver.boards_explored = }")
         print(f"{Play.cache_hits = }")
+        BoardSolver.nodes_explored = 0
+        BoardSolver.board_cache_hits = 0
+        BoardSolver.node_cache_hits = 0
+        BoardSolver.partial_plays_skipped = 0
+        BoardSolver.incomplete_depth_skipped = 0
+        BoardSolver.infesable_board_skipped = 0
+        BoardSolver.boards_explored = 0
+        Play.cache_hits = 0
         print()
         print()
         print()
