@@ -50,8 +50,8 @@ class DrawPile:
 
         # normally this would be randomly shuffled
         >>> draw_pile._pieces = [Piece("red", 1), Piece("red", 2), Piece("red", 3)]
-        >>> str(draw_pile.draw())
-        'r3'
+        >>> draw_pile.draw() == Piece("red", 3)
+        True
 
         >>> draw_pile._pieces = []
         >>> draw_pile.draw()

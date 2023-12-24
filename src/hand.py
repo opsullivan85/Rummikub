@@ -12,10 +12,11 @@ class Hand:
         """Stores the pieces in the hand. Should be sorted."""
         self.pieces.sort()
 
+    def __str__(self) -> str:
+        return ", ".join(str(piece) for piece in self.pieces)
+
     def __repr__(self) -> str:
-        s = ""
-        s += ", ".join(str(piece) for piece in self.pieces)
-        return s
+        return str(self)
 
     def take_turn(
         self, board: Board, draw_pile: DrawPile, max_turn_size: int = 3

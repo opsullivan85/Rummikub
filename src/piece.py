@@ -52,7 +52,10 @@ class Piece:
         Returns:
             str: The string representation of the piece.
         """
-        return f"{self.color[0]}{self.number}"
+        return f"{self.color}{self.number}"
+
+    def __repr__(self) -> str:
+        return str(self)
 
     def __eq__(self, other: object) -> bool:
         """Checks if two pieces are equal.
