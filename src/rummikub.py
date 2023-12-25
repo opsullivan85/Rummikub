@@ -22,7 +22,7 @@ def main():
     person_2.pieces.sort()
 
     turn = 0
-    while person_1.pieces and person_2.pieces:
+    while person_1.pieces and person_2.pieces and not draw_pile.is_empty():
         turn += 1
         print(turn)
         print(board)
